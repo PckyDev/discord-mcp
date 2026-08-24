@@ -1,0 +1,37 @@
+{
+  "name": "discord-mcp",
+  "version": "0.1.0+codex.20260824130327",
+  "description": "Manage authorized Discord servers through dedicated tools and a guarded full REST API bridge.",
+  "author": {
+    "name": "Antwa"
+  },
+  "license": "MIT",
+  "keywords": [
+    "discord",
+    "bot",
+    "community",
+    "server-management",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Discord MCP",
+    "shortDescription": "Manage Discord servers through your bot",
+    "longDescription": "Connect Codex to a Discord bot you control. Use optional Administrator access, dedicated tools, and guarded fallback access to guild-scoped Discord API v10 endpoints, with allowlist and confirmation safeguards.",
+    "developerName": "Antwa",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Show the Discord servers and channels my bot can access.",
+      "Give me the Administrator invite URL for my Discord bot.",
+      "Check whether my Discord bot is configured correctly."
+    ],
+    "brandColor": "#5865F2",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  },
+  "mcpServers": "./.mcp.json"
+}
