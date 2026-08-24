@@ -1,10 +1,12 @@
 {
   "name": "discord-mcp",
-  "version": "0.1.0+codex.20260824130327",
+  "version": "0.1.0+codex.20260824130929",
   "description": "Manage authorized Discord servers through dedicated tools and a guarded full REST API bridge.",
   "author": {
-    "name": "Antwa"
+    "name": "Pocky",
+    "url": "https://pcky.dev"
   },
+  "homepage": "https://pcky.dev",
   "license": "MIT",
   "keywords": [
     "discord",
@@ -18,7 +20,8 @@
     "displayName": "Discord MCP",
     "shortDescription": "Manage Discord servers through your bot",
     "longDescription": "Connect Codex to a Discord bot you control. Use optional Administrator access, dedicated tools, and guarded fallback access to guild-scoped Discord API v10 endpoints, with allowlist and confirmation safeguards.",
-    "developerName": "Antwa",
+    "developerName": "Pocky",
+    "websiteURL": "https://pcky.dev",
     "category": "Productivity",
     "capabilities": [
       "Read",

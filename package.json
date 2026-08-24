@@ -1,0 +1,20 @@
+{
+  "name": "discord-mcp-codex-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A guarded Discord MCP server and plugin for Codex.",
+  "license": "MIT",
+  "author": {
+    "name": "Pocky",
+    "url": "https://pcky.dev"
+  },
+  "homepage": "https://pcky.dev",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node --check scripts/discord-mcp.mjs && node --check scripts/smoke-test.mjs",
+    "test": "npm run check && node scripts/smoke-test.mjs"
+  }
+}

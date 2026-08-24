@@ -1,6 +1,19 @@
 # Discord MCP for Codex
 
+<img src="./assets/icon.png" alt="Discord MCP icon" width="128">
+
 Discord MCP is a local Codex plugin that exposes a Discord bot as MCP tools. Codex starts the bridge when needed; no always-running gateway service or public server is required.
+
+> [!IMPORTANT]
+> This project is not affiliated with or endorsed by Discord. Discord is a
+> trademark of Discord Inc. Use the bot only in servers where you are
+> authorized to administer it.
+
+## Requirements
+
+- Codex desktop with local plugin support
+- Node.js 18 or newer
+- A Discord application with a bot user
 
 ## What it can do
 
@@ -34,12 +47,34 @@ Discord still enforces the bot's permissions, enabled intents, and role hierarch
 
 To find a guild ID, enable Developer Mode in Discord, right-click the server icon, and choose **Copy Server ID**. Supplying `DISCORD_ALLOWED_GUILD_IDS` is strongly recommended; the bridge rejects every guild outside that list.
 
+## Install from source
+
+1. Clone this repository into your local Codex plugins directory as
+   `discord-mcp`.
+2. Add the plugin to a local Codex marketplace or use the repository's plugin
+   manifest with your existing local-plugin workflow.
+3. Configure the bot credentials as described below.
+4. Install or enable **Discord MCP**, restart Codex, and start a new task.
+
+The plugin manifest is located at `.codex-plugin/plugin.json`, and the MCP
+server definition is in `.mcp.json`.
+
 ## Configuration
 
 - `DISCORD_BOT_TOKEN` (required): Discord bot token.
 - `DISCORD_ALLOWED_GUILD_IDS` (recommended): comma-separated Discord guild IDs.
 
 Run `scripts/configure.ps1 -Clear` to remove both user environment variables.
+
+On macOS or Linux, set the same variables in the environment used to launch
+Codex. For example:
+
+```bash
+export DISCORD_BOT_TOKEN='your-token'
+export DISCORD_ALLOWED_GUILD_IDS='123456789012345678'
+```
+
+Do not put real values in a tracked file or paste them into a Codex task.
 
 ## Administrator access
 
@@ -69,3 +104,24 @@ This on-demand local bridge does not implement Discord Gateway event listeners, 
 - Raw writes are bound to their method, path, query, body, and audit reason; changing any of them invalidates the confirmation token.
 - Credential-like fields are blocked in request bodies and recursively redacted from raw API responses.
 - Rotate the bot token immediately in the Developer Portal if it is ever exposed.
+
+See [SECURITY.md](./SECURITY.md) for private vulnerability-reporting guidance.
+
+## Development
+
+The MCP server has no runtime package dependencies. Run the local checks and
+protocol smoke test with:
+
+```bash
+npm test
+```
+
+The smoke test uses a placeholder token and does not call Discord. Pull
+requests are also checked by GitHub Actions. See [CONTRIBUTING.md](./CONTRIBUTING.md)
+for contribution guidelines and [CHANGELOG.md](./CHANGELOG.md) for release
+history.
+
+## License
+
+The source code is available under the [MIT License](./LICENSE). Third-party
+names, logos, and trademarks remain the property of their respective owners.
