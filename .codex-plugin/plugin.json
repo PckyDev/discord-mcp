@@ -1,6 +1,6 @@
 {
   "name": "discord-mcp",
-  "version": "0.1.0+codex.20260824130929",
+  "version": "0.1.0+codex.20260824132237",
   "description": "Manage authorized Discord servers through dedicated tools and a guarded full REST API bridge.",
   "author": {
     "name": "Pocky",

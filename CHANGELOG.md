@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- Automatic versioned GitHub Releases for successful pushes to `main`.
+- Downloadable plugin ZIP archives and SHA-256 checksum files.
+
 ## [0.1.0] - 2026-08-24
 
 ### Added

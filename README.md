@@ -59,6 +59,19 @@ To find a guild ID, enable Developer Mode in Discord, right-click the server ico
 The plugin manifest is located at `.codex-plugin/plugin.json`, and the MCP
 server definition is in `.mcp.json`.
 
+## Release downloads
+
+Every push to `main` that passes the test suite creates a GitHub Release with:
+
+- A versioned `discord-mcp-vX.Y.Z-build.N.zip` plugin archive
+- A matching SHA-256 checksum file
+- Automatically generated release notes
+
+The archive extracts into a `discord-mcp` directory and can be placed directly
+in a local Codex plugins directory. The semantic version comes from
+`package.json`; the GitHub Actions run number makes every main-branch build
+uniquely downloadable.
+
 ## Configuration
 
 - `DISCORD_BOT_TOKEN` (required): Discord bot token.
