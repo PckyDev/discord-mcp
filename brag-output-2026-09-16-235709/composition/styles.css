@@ -1,0 +1,73 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0C0D14; color: #F5F5FC; font-family: Manrope, sans-serif; }
+h1, h2, h3, p { margin: 0; }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #0C0D14; }
+.clip, .scene { position: absolute; inset: 0; perspective: 1800px; }
+.ambient { position: absolute; width: 1400px; height: 1100px; right: -290px; top: -70px; background: radial-gradient(ellipse, #5865f22e 0%, #5865f210 36%, transparent 67%); pointer-events: none; }
+.brand { position: absolute; left: 96px; top: 58px; display: flex; align-items: center; gap: 15px; font-size: 25px; font-weight: 700; z-index: 20; }
+.brand img { width: 44px; height: 44px; }
+.line { display: block; }
+.accent { color: #A6ADFF; }
+.hero-title { position: absolute; left: 124px; top: 338px; width: 1100px; font-size: 132px; font-weight: 750; letter-spacing: -.065em; line-height: 1.14; }
+.hero-icon { position: absolute; left: 1230px; top: 275px; width: 530px; height: 530px; filter: drop-shadow(0 34px 55px #030409); }
+.ask-title { position: absolute; top: 244px; left: 140px; right: 140px; text-align: center; font-size: 106px; line-height: 1.14; font-weight: 750; letter-spacing: -.055em; }
+.composer { position: absolute; left: 280px; top: 423px; width: 1360px; height: 282px; padding: 43px 51px; border: 2px solid #555B80; border-radius: 30px; background: #1B1D2C; box-shadow: 0 28px 95px #0006; }
+.typed-copy { width: 1120px; font-size: 42px; line-height: 1.5; font-weight: 500; letter-spacing: -.018em; }
+.typed-word { display: inline-block; white-space: nowrap; }
+.typed-letter { display: inline; }
+.send { position: absolute; width: 76px; height: 76px; right: 40px; bottom: 39px; border-radius: 50%; background: #5865F2; display: grid; place-items: center; }
+.send svg { width: 40px; height: 40px; fill: none; stroke: #F5F5FC; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.sent-state { position: absolute; left: 52px; bottom: 39px; color: #A8F0C9; font-size: 24px; }
+.pointer { position: absolute; left: 1500px; top: 822px; width: 42px; height: 53px; fill: #F5F5FC; stroke: #111320; stroke-width: 2; filter: drop-shadow(0 3px 4px #0008); }
+.build-title { position: absolute; left: 100px; top: 366px; width: 665px; font-size: 85px; line-height: 1.2; letter-spacing: -.055em; font-weight: 750; transform-origin: left center; }
+.server-window { position: absolute; left: 818px; top: 217px; width: 1000px; height: 660px; border: 2px solid #535A7C; border-radius: 28px; overflow: hidden; background: #202231; box-shadow: 0 35px 95px #0007; transform-style: preserve-3d; }
+.window-top { height: 82px; display: flex; align-items: center; gap: 17px; padding: 0 26px; border-bottom: 2px solid #393E58; background: #292C3D; font-size: 27px; font-weight: 700; }
+.server-monogram { width: 43px; height: 43px; border-radius: 14px; display: grid; place-items: center; background: #5865F2; font-size: 25px; }
+.top-status { margin-left: auto; color: #BDC4FF; font-size: 20px; font-weight: 500; }
+.channel-list { position: absolute; left: 0; top: 82px; bottom: 0; width: 340px; padding: 23px 24px; background: #1A1C29; }
+.category { padding: 20px 11px 10px; font-size: 18px; font-weight: 750; letter-spacing: .09em; color: #B5B7CC; }
+.channel { height: 49px; padding: 0 14px; display: flex; align-items: center; gap: 15px; border-radius: 9px; font-size: 26px; color: #DCE0F4; }
+.channel.selected { background: #363C70; }
+.channel-icon { width: 27px; color: #B6BEFA; font-size: 31px; }
+.server-result { position: absolute; left: 340px; top: 82px; right: 0; bottom: 0; padding: 86px 44px 35px; }
+.welcome-symbol { width: 90px; height: 90px; border-radius: 26px; background: #353C66; color: #CED3FF; display: grid; place-items: center; font-size: 56px; }
+.welcome-title { margin-top: 24px; font-size: 42px; line-height: 1.22; font-weight: 750; letter-spacing: -.04em; max-width: 490px; }
+.roles-line { display: flex; gap: 12px; margin-top: 29px; }
+.role-chip { padding: 9px 15px; border: 1px solid #676E94; border-radius: 24px; font-size: 21px; color: #DFE2FF; }
+.role-chip:nth-child(2) { color: #A8F0C9; }
+.role-chip:nth-child(3) { color: #F1C4E6; }
+.complete-state { margin-top: 37px; font-size: 24px; color: #A8F0C9; }
+.demo-label { position: absolute; bottom: 47px; right: 100px; font-size: 18px; color: #B5B7CC; }
+.result-title { position: absolute; top: 194px; left: 100px; right: 100px; text-align: center; font-size: 100px; line-height: 1.15; letter-spacing: -.06em; font-weight: 750; }
+.settings-window { position: absolute; left: 390px; top: 361px; width: 1140px; height: 530px; background: #202231; border: 2px solid #535A7C; border-radius: 28px; overflow: hidden; box-shadow: 0 30px 80px #0006; }
+.settings-top { height: 86px; padding: 0 47px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3E435D; background: #292C3D; font-size: 29px; font-weight: 650; }
+.role-dot { width: 17px; height: 17px; border-radius: 50%; background: #93EBC0; }
+.settings-body { padding: 15px 47px; }
+.permission { display: flex; align-items: center; justify-content: space-between; padding: 26px 0; border-bottom: 1px solid #414761; font-size: 32px; }
+.toggle { width: 84px; height: 46px; padding: 5px; background: #515872; border-radius: 26px; }
+.toggle-knob { width: 36px; height: 36px; background: #F5F5FC; border-radius: 50%; }
+.slowmode { display: flex; align-items: center; justify-content: space-between; margin-top: 26px; padding: 21px 24px; background: #30354E; border-radius: 15px; font-size: 30px; }
+.slowvalue { color: #D4D9FF; font-weight: 750; }
+.saved { margin-top: 26px; color: #A8F0C9; font-size: 25px; }
+.task-title { position: absolute; top: 232px; left: 80px; right: 80px; text-align: center; font-size: 88px; line-height: 1.2; letter-spacing: -.055em; font-weight: 750; }
+.task-window { position: absolute; left: 330px; top: 414px; width: 1260px; height: 390px; border: 2px solid #535A7C; border-radius: 28px; overflow: hidden; background: #202231; box-shadow: 0 30px 85px #0006; }
+.task-top { height: 82px; padding: 0 44px; display: flex; align-items: center; background: #292C3D; border-bottom: 2px solid #3E435D; color: #C6CBE4; font-size: 26px; font-weight: 600; }
+.message { display: flex; gap: 28px; padding: 37px 49px; }
+.avatar { min-width: 58px; width: 58px; height: 58px; border-radius: 20px; background: #5865F2; display: grid; place-items: center; font-size: 30px; font-weight: 750; }
+.message-author { font-size: 25px; font-weight: 700; }
+.app-tag { display: inline-block; vertical-align: middle; margin-left: 9px; padding: 4px 8px; background: #5865F2; border-radius: 6px; font-size: 17px; }
+.message-body { margin-top: 17px; font-size: 42px; line-height: 1.42; }
+.recap { padding: 55px 50px; font-size: 42px; line-height: 1.55; letter-spacing: -.02em; }
+.event { display: flex; gap: 38px; align-items: center; padding: 42px 53px; }
+.calendar { width: 143px; min-width: 143px; height: 160px; border-radius: 23px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #39417B; }
+.calendar .day { font-size: 22px; font-weight: 750; color: #D4DAFF; }
+.calendar .date { font-size: 67px; line-height: 1.15; font-weight: 800; }
+.event-name { font-size: 48px; letter-spacing: -.04em; font-weight: 750; }
+.event-time { margin-top: 19px; font-size: 30px; color: #C2C7DF; }
+.outro-icon { position: absolute; left: 210px; top: 241px; width: 540px; height: 540px; filter: drop-shadow(0 32px 55px #0008); }
+.outro-copy { position: absolute; left: 837px; top: 321px; width: 990px; }
+.outro-title { font-size: 112px; line-height: 1.1; font-weight: 800; letter-spacing: -.06em; }
+.outro-tagline { font-size: 43px; color: #C3C7E6; margin-top: 27px; letter-spacing: -.025em; }
+.outro-cta { display: inline-flex; align-items: center; gap: 22px; margin-top: 56px; border-radius: 40px; background: #5865F2; padding: 21px 32px; font-size: 28px; font-weight: 700; }
+.outro-url { font-size: 24px; color: #B5B7CC; margin-top: 27px; }
+.outro-by { position: absolute; left: 0; right: 0; bottom: 86px; text-align: center; font-size: 23px; color: #B5B7CC; }

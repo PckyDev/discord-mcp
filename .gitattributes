@@ -3,3 +3,4 @@
 
 # Launch media stays in GitHub, but not in installable plugin release archives.
 /brag-output export-ignore
+/brag-output-2026-09-16-235709 export-ignore

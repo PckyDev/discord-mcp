@@ -1,0 +1,11 @@
+{
+  "duration": 74,
+  "assertions": [
+    {"kind": "appearsBy", "selector": "#intro-second", "bySec": 1.5},
+    {"kind": "before", "a": "#build-ask-title", "b": "#server-window"},
+    {"kind": "before", "a": "#config-ask-title", "b": "#settings-window"},
+    {"kind": "staysInFrame", "selector": "#build-composer"},
+    {"kind": "staysInFrame", "selector": "#settings-window"},
+    {"kind": "staysInFrame", "selector": "#end-title"}
+  ]
+}
