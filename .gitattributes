@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Launch media stays in GitHub, but not in installable plugin release archives.
+/brag-output export-ignore
