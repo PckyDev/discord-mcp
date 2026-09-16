@@ -23,6 +23,7 @@ Thumbs.db
 Desktop.ini
 
 # Local scratch and generated output
+brag-output*/
 tmp/
 temp/
 *.log

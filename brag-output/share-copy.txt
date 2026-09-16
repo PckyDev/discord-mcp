@@ -1,1 +1,0 @@
-Your Discord server. Just ask. Discord MCP lets your agent build channels, configure roles and permissions, and handle the everyday work of running a community. Get it at https://github.com/PckyDev/discord-mcp

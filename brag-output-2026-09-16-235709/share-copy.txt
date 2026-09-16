@@ -1,1 +1,0 @@
-Your agent meets Discord. Ask it to build your community, configure your server, and take care of the everyday. Get Discord MCP at https://github.com/PckyDev/discord-mcp
