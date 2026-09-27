@@ -5,6 +5,7 @@
 *.pem
 *.key
 secrets/
+.discord-mcp-chat/
 
 # Node.js
 node_modules/

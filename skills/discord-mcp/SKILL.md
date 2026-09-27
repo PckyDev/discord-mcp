@@ -7,6 +7,12 @@ description: Inspect and manage Discord servers through the user's configured Di
 
 Use the bundled `discord-mcp` MCP tools for Discord operations.
 
+## Optional mention/reply chat setup
+
+For requests to enable, configure, disable, or troubleshoot chatting with the bot, read
+[chat setup](references/chat-setup.md). Chat is off by default; do not enable it as part of
+ordinary server administration. It uses a dedicated Codex agent, not an existing GUI chat.
+
 ## Safety and workflow
 
 1. Call `discord_status` when configuration or connectivity is uncertain.
@@ -27,7 +33,7 @@ Use the bundled `discord-mcp` MCP tools for Discord operations.
 - Administrator does not bypass Discord's role hierarchy. The bot role must be positioned above roles and members it needs to manage, and it cannot act on the server owner.
 - Use `reason` for administrative mutations when available; it appears in Discord's audit log.
 - Avoid `@everyone`, `@here`, and role/user mentions in messages unless the user explicitly requests them.
-- The raw REST tools do not provide a continuously running Gateway connection, voice/audio streaming, inbound event handlers, or multipart file uploads. Explain this boundary rather than claiming those operations succeeded.
+- Ordinary REST tools do not receive events. The optional chat listener receives Gateway messages only after explicit setup. Voice/audio streaming and multipart uploads are not implemented.
 
 ## Common flow
 

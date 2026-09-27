@@ -2,6 +2,8 @@
 
 import readline from "node:readline";
 import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
+import { chatTools, chatControl } from "./chat/config.mjs";
 
 const API_BASE = "https://discord.com/api/v10";
 const SERVER_VERSION = "0.1.0";
@@ -34,6 +36,7 @@ const objectSchema = (properties, required = []) => ({
 const idSchema = (description) => ({ type: "string", pattern: "^[0-9]{17,20}$", description });
 
 const tools = [
+  ...chatTools,
   {
     name: "discord_status",
     description: "Check whether the Discord bot is configured, validate its token, and return both Administrator and least-privilege OAuth invite URLs.",
@@ -280,6 +283,7 @@ async function discord(path, { method = "GET", body, reason, retries = 2 } = {})
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (response.status === 429 && retries > 0) {
@@ -307,6 +311,11 @@ async function discord(path, { method = "GET", body, reason, retries = 2 } = {})
 
 function normalizeApiPath(rawPath) {
   const path = String(rawPath || "").trim();
+  // URL parsers normalize encoded dot segments before sending a request. Reject
+  // these before resolving guild ownership so a checked route cannot escape it.
+  if (/%25/i.test(path) || path.split("/").some(segment => [".", ".."].includes(decodeURIComponent(segment)))) {
+    throw new Error("Encoded or literal dot segments and double-encoded paths are blocked.");
+  }
   if (!path.startsWith("/") || path.startsWith("//")) throw new Error("path must begin with one /.");
   if (path.includes("?") || path.includes("#")) throw new Error("Put query parameters in the query object, not in path.");
   if (path.includes("\\") || /%2f|%5c/i.test(path) || path.split("/").includes("..")) {
@@ -452,6 +461,7 @@ function cleanRole(role) {
 }
 
 async function callTool(name, args = {}) {
+  if (name.startsWith("discord_chat_")) return chatControl(name, args, { discord, requireAllowedGuild });
   switch (name) {
     case "discord_status": {
       if (!token) {
@@ -636,6 +646,9 @@ async function handle(message) {
   }
 }
 
+export { tools, callTool, discord, authorizeApiPath, requireAllowedGuild };
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 rl.on("line", (line) => {
   const trimmed = line.trim();
@@ -646,3 +659,4 @@ rl.on("line", (line) => {
     write({ jsonrpc: "2.0", id: null, error: { code: -32700, message: `Parse error: ${error.message}` } });
   }
 });
+}

@@ -4,7 +4,7 @@
       "command": "node",
       "args": ["./scripts/discord-mcp.mjs"],
       "cwd": ".",
-      "env_vars": ["DISCORD_BOT_TOKEN", "DISCORD_ALLOWED_GUILD_IDS"],
+      "env_vars": ["DISCORD_BOT_TOKEN", "DISCORD_ALLOWED_GUILD_IDS", "DISCORD_CHAT_HOME", "DISCORD_CHAT_CODEX_EXECUTABLE"],
       "startup_timeout_sec": 10,
       "tool_timeout_sec": 60,
       "default_tools_approval_mode": "writes"

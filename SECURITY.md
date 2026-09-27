@@ -1,5 +1,17 @@
 # Security policy
 
+## Optional Discord chat
+
+Chat is disabled by default. Its local setup/control tools must never be exposed to Discord
+users. The bridge enforces user/role/channel allowlists, requester permissions, administrator-only
+writes, and exact expiring human confirmations outside the model. Context reads stay in the
+originating channel/thread. Preserve these boundaries when adding tools.
+
+The agent uses a dedicated home and environment-less ephemeral threads with personal plugins,
+apps, hooks, shell, browser, and computer tools disabled. Protect the external `.discord-mcp-chat`
+directory, especially its isolated authentication. Never commit it. After changing the experimental
+Codex interface, recheck protocol compatibility and isolation. See `docs/chat.md` for limitations.
+
 ## Supported versions
 
 Security fixes are applied to the latest version on the `main` branch.

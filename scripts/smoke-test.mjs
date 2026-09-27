@@ -39,6 +39,9 @@ try {
   if (!Array.isArray(listed.result?.tools) || listed.result.tools.length < 15) throw new Error("Tool listing failed");
   if (!listed.result.tools.some((tool) => tool.name === "discord_api_read")) throw new Error("Raw read tool missing");
   if (!listed.result.tools.some((tool) => tool.name === "discord_api_write")) throw new Error("Raw write tool missing");
+  for (const name of ["discord_chat_status", "discord_chat_setup", "discord_chat_control"]) {
+    if (!listed.result.tools.some((tool) => tool.name === name)) throw new Error(`Chat tool missing: ${name}`);
+  }
 
   const status = await request(3, "tools/call", { name: "discord_status", arguments: {} });
   if (status.result?.structuredContent?.configured !== false) throw new Error("Unconfigured status check failed");
@@ -65,6 +68,10 @@ try {
   }
 
   console.log(`Smoke test passed: ${listed.result.tools.length} tools loaded.`);
+  const escaped = await request(7, "tools/call", { name: "discord_api_write", arguments: {
+    method: "PATCH", path: "/guilds/123456789012345678/%2e%2e/%2e%2e/guilds/987654321098765432", body: { name: "blocked" },
+  } });
+  if (escaped.result?.isError !== true || !escaped.result?.structuredContent?.error?.includes("dot segments")) throw new Error("Encoded route traversal guard failed");
 } finally {
   child.kill();
 }

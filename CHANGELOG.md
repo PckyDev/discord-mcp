@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add optional, disabled-by-default Discord mention/reply chat using an isolated Codex agent.
+- Add one-question-at-a-time setup, model discovery and locking, status/start/stop/disable tools,
+  and optional Windows sign-in startup.
+- Enforce requester/channel allowlists, administrator-only mutations, exact expiring human
+  confirmations, channel-local context, bounded sessions, rate limits, and bot-loop prevention.
+- Add automated permission, configuration, runtime, Gateway, and app-server protocol tests.
+
 All notable changes to Discord MCP will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

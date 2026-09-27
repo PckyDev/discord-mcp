@@ -101,6 +101,15 @@ For a bot already in the server, reauthorize it with `administrator_invite_url` 
 
 ## Architecture
 
+### Optional chat agent (disabled by default)
+
+Ask your agent **"Enable chatting with the Discord bot"** for one-question-at-a-time setup.
+It covers a separate Codex login, server, users/roles, channels, model, reasoning effort,
+confirmation policy, and optional Windows sign-in startup. Nothing listens or uses a model
+until you approve the final settings. See [chat setup and security](docs/chat.md).
+
+### Ordinary MCP server
+
 Codex communicates with a dependency-free local Node.js MCP server over stdio. The MCP server calls Discord API v10 over HTTPS using the bot token. It does not listen on a network port, receive Discord messages, or require privileged gateway intents.
 
 ## Coverage and limits
