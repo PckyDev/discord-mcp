@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fix Windows chat setup under Restricted PowerShell execution policy using inline commands
+  and a per-user Startup shortcut, with verified legacy-task cleanup and idempotent removal.
+- Preserve unfinished setup drafts for focused edits and retry after startup failures.
+- Verify current-instance listener health before reporting enablement; roll back failed starts,
+  report installation/removal errors separately, and serialize setup/control requests.
+
 - Add optional, disabled-by-default Discord mention/reply chat using an isolated Codex agent.
 - Add one-question-at-a-time setup, model discovery and locking, status/start/stop/disable tools,
   and optional Windows sign-in startup.

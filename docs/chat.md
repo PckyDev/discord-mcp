@@ -47,7 +47,28 @@ Ask to change configuration, check status, stop, or disable chat. The local-only
 until final approval. Disabling removes Windows autostart without affecting ordinary MCP tools.
 Startup is at Windows sign-in, not boot before login. On other platforms run `npm run chat:start`
 under your preferred service manager. Stop before upgrading/removing the plugin installation used
-by the startup task, then run setup again so startup uses the current paths.
+by the startup entry, then run setup again so startup uses the current paths.
+
+Windows startup uses a per-user Startup-folder shortcut, not an elevated scheduled task.
+Registration/removal runs inline PowerShell commands, so no `.ps1` execution or machine/user
+execution-policy change is needed. Removal verifies absence and is a no-op when there is no
+entry. The plugin also checks and removes its exact legacy scheduled-task name; failures to
+inspect or remove an entry are reported, never treated as successful removal. Enterprise
+restrictions on PowerShell, COM, or Startup folders can still prevent registration.
+
+If initial enablement fails, the complete draft and isolated login are retained. Ask the agent
+to resume setup, or call `discord_chat_setup` with `{"field":"autoStart"}` to change just that
+answer, then approve the final review again. Installation and removal errors are reported
+separately. If the listener fails its health check, configuration is disabled again and any
+new startup registration is removed; cleanup failures are also reported. `startup` in status
+contains the last verified entry state or an explicit unknown/error, not an assumption based
+on the desired `config.autoStart` setting. `enabled` and `running` are true only with saved
+configuration and fresh health matching the current listener instance. Configuration alone
+is not proof that the listener is running.
+
+Setup/control operations are serialized across local hosts/processes. A concurrent request
+returns a busy error instead of starting another listener. The same state-directory-specific
+shortcut is updated in place on repeated installation.
 
 Configuration and isolated authentication live outside the repository in `~/.discord-mcp-chat`;
 override with `DISCORD_CHAT_HOME`. Protect this directory as sensitive. Listener status does not

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { randomUUID } from "node:crypto";
 import { stateDir, readState, saveState, validateConfig } from "./config.mjs";
 import { CodexAgent } from "./codex.mjs";
 import { Gateway } from "./gateway.mjs";
@@ -83,7 +84,7 @@ export class ChatRuntime {
 export async function acquireLock() {
   await fs.mkdir(stateDir(), { recursive: true, mode: 0o700 });
   const file = path.join(stateDir(), "lock.json");
-  try { const handle = await fs.open(file, "wx", 0o600); await handle.writeFile(JSON.stringify({ pid: process.pid })); await handle.close(); }
+  try { const handle = await fs.open(file, "wx", 0o600); const identity = { pid: process.pid, instanceId: randomUUID() }; await handle.writeFile(JSON.stringify(identity)); await handle.close(); return identity; }
   catch (e) {
     if (e.code !== "EEXIST") throw e;
     const old = await readState("lock.json");
@@ -98,9 +99,9 @@ export async function main() {
   if (process.argv[2] === "--state" && process.argv[3]) process.env.DISCORD_CHAT_HOME = path.resolve(process.argv[3]);
   const config = await readState("config.json", { enabled: false });
   if (!config.enabled) return; // No socket, agent, lock, or startup work on default installs.
-  await acquireLock();
+  const identity = await acquireLock();
   let gateway, runtime, agent, timer, stopping = false;
-  let health = { running: false, gateway: "starting", error: null };
+  let health = { ...identity, running: false, gateway: "starting", error: null };
   const report = () => saveState("health.json", { ...health, updatedAt: Date.now() });
   async function stop() {
     if (stopping) return; stopping = true; clearInterval(timer);
@@ -115,6 +116,10 @@ export async function main() {
     if (!process.env.DISCORD_BOT_TOKEN) throw new Error("Missing DISCORD_BOT_TOKEN. Run scripts/configure.ps1 and restart the host.");
     await saveState("control.json", { stop: false });
     await report();
+    // Honor stop/disable even while authentication or REST startup checks are pending.
+    timer = setInterval(() => { void (async () => {
+      if ((await readState("control.json"))?.stop || !(await readState("config.json"))?.enabled) await stop(); else await report();
+    })().catch(() => stop()); }, 500);
     agent = new CodexAgent(stateDir(), config.codexExecutable); await agent.connect();
     agent.onFatal = error => { health.error = error; void stop(); };
     const account = await agent.rpc("account/read", {});
@@ -123,6 +128,7 @@ export async function main() {
     if (!models.some(m => m.model === config.model)) throw new Error("Configured model is unavailable. Run guided setup to select an available model.");
     const bot = await api.discord("/users/@me");
     const gatewayInfo = await api.discord("/gateway/bot");
+    if (stopping || (await readState("control.json"))?.stop || !(await readState("config.json"))?.enabled) { await stop(); return; }
     if (gatewayInfo.session_start_limit?.remaining === 0) throw new Error("Discord Gateway session start limit reached. Try later.");
     runtime = new ChatRuntime({ config, botId: bot.id, agent });
     runtime.checkActive = async () => {
@@ -134,9 +140,6 @@ export async function main() {
       onError: (error, fatal) => { health.error = error; health.gateway = "disconnected"; health.running = false; void report(); if (fatal) void stop(); },
     });
     gateway.connect(gatewayInfo.url);
-    timer = setInterval(() => { void (async () => {
-      if ((await readState("control.json"))?.stop || !(await readState("config.json"))?.enabled) await stop(); else await report();
-    })().catch(() => stop()); }, 2000);
     process.once("SIGTERM", () => { void stop(); }); process.once("SIGINT", () => { void stop(); });
   } catch (e) { health.error = e.message; await stop(); process.exitCode = 1; }
 }

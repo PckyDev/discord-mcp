@@ -28,4 +28,6 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Run checks and smoke tests
+        env:
+          DISCORD_TEST_STARTUP: ${{ runner.os == 'Windows' && '1' || '0' }}
         run: npm test

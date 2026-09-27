@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { CodexAgent, prepareAgentHome } from "./codex.mjs";
+import { reconcileStartup } from "./startup.mjs";
 
 export const stateDir = () => path.resolve(process.env.DISCORD_CHAT_HOME || path.join(os.homedir(), ".discord-mcp-chat"));
 export const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -58,17 +59,20 @@ export async function status() {
   const lock = await readState("lock.json");
   let alive = false;
   if (Number.isInteger(lock?.pid) && lock.pid > 0) { try { process.kill(lock.pid, 0); alive = true; } catch { /* Stale process state. */ } }
-  return { config, process_running: alive, running: Boolean(alive && health && Date.now() - health.updatedAt < 15000 && health.running), health,
+  const running = Boolean(config.enabled && alive && health && health.pid === lock.pid && health.instanceId && health.instanceId === lock.instanceId && Date.now() - health.updatedAt < 15000 && health.running);
+  return { config, enabled: running, process_running: alive, running, health, startup: await readState("startup.json"),
     state_directory: stateDir(), login_command: `node "${path.join(scriptDir, "login.mjs")}"`,
     note: "Local host must be awake. Chat is separate from desktop conversations. Model usage uses the isolated Codex login's limits or billing." };
 }
-async function startup(enabled) {
-  if (process.platform !== "win32") { if (enabled) throw new Error("Automatic startup currently supports Windows only; use your service manager on other systems."); return; }
-  await new Promise((resolve, reject) => {
-    const child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-File", path.join(scriptDir, "startup.ps1"), "-Action", enabled ? "Install" : "Remove", "-NodePath", process.execPath, "-ListenerPath", path.join(scriptDir, "listener.mjs"), "-StatePath", stateDir()], { windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
-    let error = ""; child.stderr.on("data", x => { error += x; });
-    child.on("error", reject); child.on("exit", code => code === 0 ? resolve() : reject(new Error(`Startup registration failed: ${error}`)));
-  });
+export async function startup(enabled) {
+  try {
+    const result = await reconcileStartup(enabled, stateDir());
+    await saveState("startup.json", { ...result, updatedAt: Date.now() });
+    return result;
+  } catch (e) {
+    await saveState("startup.json", { present: null, error: e.message, updatedAt: Date.now() });
+    throw e;
+  }
 }
 export async function stopListener() {
   await saveState("control.json", { stop: true });
@@ -80,29 +84,80 @@ export async function stopListener() {
   }
   throw new Error("Listener did not stop. Check status before retrying; no other process was killed.");
 }
-async function startListener() {
+export async function startListener({ spawnProcess = spawn, getStatus = status, sleep = ms => new Promise(r => setTimeout(r, ms)), attempts = 80 } = {}) {
   const c = validateConfig(await readState("config.json", {}));
   if (!c.enabled) throw new Error("Chat is disabled. Complete discord_chat_setup first.");
-  if ((await status()).process_running) return { ...await status(), message: "A listener process is already active. Check health, or stop it before restarting." };
-  await saveState("control.json", { stop: false });
-  const child = spawn(process.execPath, [path.join(scriptDir, "listener.mjs")], { detached: true, windowsHide: true, stdio: "ignore", env: { ...process.env, DISCORD_CHAT_HOME: stateDir() } });
-  await new Promise((resolve, reject) => { child.once("spawn", resolve); child.once("error", reject); });
-  child.unref();
-  for (let i = 0; i < 20; i++) {
-    await new Promise(r => setTimeout(r, 250));
-    const s = await status(); if (s.running) return s;
+  const initial = await getStatus();
+  if (initial.running) return initial;
+  let child;
+  if (!initial.process_running) {
+    await saveState("control.json", { stop: false });
+    child = spawnProcess(process.execPath, [path.join(scriptDir, "listener.mjs")], { detached: true, windowsHide: true, stdio: "ignore", env: { ...process.env, DISCORD_CHAT_HOME: stateDir() } });
+    await new Promise((resolve, reject) => { child.once("spawn", resolve); child.once("error", reject); });
+    child.unref();
   }
-  return { ...await status(), message: "Start requested, but not ready yet. Check status for startup errors." };
+  for (let i = 0; i < attempts; i++) {
+    await sleep(250);
+    const s = await getStatus();
+    if (s.running) return s;
+    if (s.health?.error && (!child || s.health.pid === child.pid)) throw new Error(`Listener startup failed: ${s.health.error}`);
+    if (child && child.exitCode !== null) throw new Error("Listener exited before becoming healthy. Check discord_chat_status.");
+  }
+  throw new Error("Listener health verification timed out. Chat enablement has not completed; the setup draft is retained.");
 }
-export async function chatControl(name, args, api) {
+
+// Serialize setup/control across MCP processes. A second request fails explicitly,
+// rather than spawning a second listener or racing task installation/removal.
+async function withControlLock(action) {
+  await fs.mkdir(stateDir(), { recursive: true, mode: 0o700 });
+  const file = path.join(stateDir(), "operation-lock");
+  let handle;
+  try { handle = await fs.open(file, "wx", 0o600); }
+  catch (e) { if (e.code === "EEXIST") throw new Error("Another chat setup/control operation is in progress. Wait for it to finish. If the host crashed, remove the stale operation-lock file after checking no setup is running."); throw e; }
+  try { await handle.writeFile(String(process.pid)); return await action(); }
+  finally { await handle.close(); await fs.rm(file, { force: true }); }
+}
+
+export async function enableDraft(draft, { stop = stopListener, reconcile = startup, start = startListener } = {}) {
+  validateConfig(draft.config);
+  // Preserve the complete draft before any external side effect or possible failure.
+  await saveState("setup.json", { ...draft, step: 10 });
+  await stop();
+  await saveState("config.json", { ...draft.config, enabled: false });
+  await reconcile(draft.config.autoStart);
+  try {
+    await saveState("config.json", { ...draft.config, enabled: true });
+    const ready = await start();
+    if (!ready.running || !(await readState("config.json"))?.enabled) throw new Error("Listener health was not verified.");
+    await fs.rm(path.join(stateDir(), "setup.json"), { force: true });
+    return { ...ready, enabled: true, test: "Mention the bot in a selected channel and ask it to introduce itself. Replies without a mention require Message Content intent enabled in Discord Developer Portal." };
+  } catch (e) {
+    await saveState("config.json", { ...draft.config, enabled: false });
+    const cleanup = [];
+    try { await stop(); } catch (error) { cleanup.push(error.message); }
+    if (draft.config.autoStart) {
+      try { await reconcile(false); await saveState("config.json", { ...draft.config, enabled: false, autoStart: false }); }
+      catch (error) { cleanup.push(error.message); }
+    }
+    throw new Error(`Chat enablement failed: ${e.message} Draft retained.${cleanup.length ? ` Cleanup failed: ${cleanup.join("; ")}` : ""}`);
+  }
+}
+
+export async function chatControl(name, args, api, lifecycle = {}) {
+  if (name === "discord_chat_status") return status();
+  return withControlLock(() => chatControlLocked(name, args, api, lifecycle));
+}
+async function chatControlLocked(name, args, api, lifecycle) {
   if (name === "discord_chat_status") return status();
   if (name === "discord_chat_control") {
     if (args.action === "start") return startListener();
     if (!["stop", "disable"].includes(args.action)) throw new Error("Unknown action.");
     if (args.action === "disable") {
       const c = await readState("config.json", { enabled: false });
-      await saveState("config.json", { ...c, enabled: false, autoStart: false });
+      await saveState("config.json", { ...c, enabled: false });
+      await stopListener();
       await startup(false);
+      await saveState("config.json", { ...c, enabled: false, autoStart: false });
     }
     await stopListener(); return status();
   }
@@ -112,7 +167,10 @@ export async function chatControl(name, args, api) {
     if (args.answer !== undefined) throw new Error("Start a focused edit without answer, then ask the returned question.");
     const index = steps.findIndex(([key]) => key === args.field);
     if (![3, 4, 5, 6, 7, 8, 9].includes(index)) throw new Error("Unsupported settings field.");
-    draft = { step: index, editing: true, config: validateConfig(await readState("config.json", {})) };
+    // Prefer a complete unfinished draft after failed initial enablement. Keep its
+    // authenticated model discovery and all previous answers during focused edits.
+    const source = draft?.config || await readState("config.json", {});
+    draft = { ...draft, step: index, editing: true, config: validateConfig(source) };
     if (["model", "effort"].includes(args.field)) {
       const agent = new CodexAgent(stateDir(), draft.config.codexExecutable);
       try { await agent.connect(); draft.models = await agent.models(); } finally { agent.close(); }
@@ -153,13 +211,8 @@ export async function chatControl(name, args, api) {
     else if (key === "autoStart") { if (!/^(yes|no)$/i.test(answer)) throw new Error("Answer yes or no."); if (/yes/i.test(answer) && process.platform !== "win32") throw new Error("Automatic startup is Windows-only. Answer no and configure a service separately."); draft.config.autoStart = /yes/i.test(answer); }
     else if (key === "finish") {
       if (!/^(yes|no)$/i.test(answer)) throw new Error("Answer yes or no.");
-      if (/no/i.test(answer)) return { enabled: (await readState("config.json"))?.enabled || false, message: "Draft retained; existing listener configuration was not changed." };
-      validateConfig(draft.config);
-      await stopListener();
-      await startup(draft.config.autoStart);
-      await saveState("config.json", { ...draft.config, enabled: true });
-      await fs.rm(path.join(stateDir(), "setup.json"), { force: true });
-      return { ...await startListener(), test: "Mention the bot in a selected channel and ask it to introduce itself. Replies without a mention require Message Content intent enabled in Discord Developer Portal." };
+      if (/no/i.test(answer)) return { enabled: (await status()).enabled, message: "Draft retained; existing listener configuration was not changed." };
+      return enableDraft(draft, lifecycle);
     }
     draft.step = draft.editing && key !== "model" ? 10 : draft.step + 1;
   }

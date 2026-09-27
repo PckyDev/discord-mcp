@@ -130,7 +130,7 @@ test("setup starts disabled, asks one question, validates choices, and does not 
     const edit = await chatControl("discord_chat_setup", { field: "userIds" }, fakeApi()); assert.equal(edit.step, "userIds");
     const review = await chatControl("discord_chat_setup", { answer: "only me" }, fakeApi()); assert.equal(review.step, "finish");
     assert.equal((await readState("config.json")).enabled, true);
-    assert.equal((await chatControl("discord_chat_setup", { answer: "no" }, fakeApi())).enabled, true);
+    assert.equal((await chatControl("discord_chat_setup", { answer: "no" }, fakeApi())).enabled, false); // Saved intent is not verified health.
     assert.throws(() => validateConfig({ ...config(), channelIds: [] }));
     assert.throws(() => validateConfig({ ...config(), userIds: [] }));
   } finally { if (previous === undefined) delete process.env.DISCORD_CHAT_HOME; else process.env.DISCORD_CHAT_HOME = previous; await fs.rm(root, { recursive: true, force: true }); }

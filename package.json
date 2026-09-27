@@ -15,7 +15,7 @@
   },
   "scripts": {
     "check": "node --check scripts/discord-mcp.mjs && node --check scripts/smoke-test.mjs",
-    "test": "npm run check && node scripts/smoke-test.mjs && node --test scripts/chat/test/chat.test.mjs",
+    "test": "npm run check && node scripts/smoke-test.mjs && node --test scripts/chat/test/chat.test.mjs scripts/chat/test/setup.test.mjs",
     "chat:login": "node scripts/chat/login.mjs",
     "chat:start": "node scripts/chat/listener.mjs"
   }
